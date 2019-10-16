@@ -1,0 +1,76 @@
+#!/usr/bin/perl
+# 
+# ipa-append-my-ssh-pub-key
+#
+# Copyright (c) 2019 Christopher Crawford
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+#
+use strict;
+use warnings;
+
+my $id_rsa_file = glob('~/.ssh/id_rsa');
+my $id_rsa_pub_file = $id_rsa_file . '.pub';
+
+unless (-e $id_rsa_pub_file) {
+    # https://stackoverflow.com/questions/43235179/how-to-execute-ssh-keygen-without-prompt/45031320
+    system("yes y | ssh-keygen -q -t rsa -b 4096 -N '' -f $id_rsa_file >/dev/null");
+}
+
+open my $fh, '<', "$id_rsa_pub_file" or die "Can't open file $!";
+my $new_pub_key = do { local $/; <$fh> };
+close $fh;
+chomp $new_pub_key;
+
+my $whoami = qx/whoami/;
+chomp $whoami;
+
+my @out = qx/ipa user-find --all --login=$whoami/;
+my @grep_out = grep(/SSH public key:/, @out);
+
+my $current_keys = $grep_out[0];
+chomp $current_keys;
+
+$current_keys =~ s/(^[\t ]*SSH public key:[\t ]*)(.+)/$2/;
+
+my @keys = split(',', $current_keys);
+chomp @keys;
+
+@grep_out = ();
+@grep_out = grep(!/^$new_pub_key$/, @keys);
+if (@grep_out > 0){
+    # Our public key already exists on the freeipa server - no need to continue
+    exit;
+}
+
+my $hostname = qx/hostname -f/;
+chomp $hostname;
+
+my $user_at_hostname = "$whoami" . '@' . "$hostname";
+@grep_out = ();
+@grep_out = grep(!/$user_at_hostname$/, @keys);
+
+unshift @grep_out, $new_pub_key;
+
+my @new_keys = map { '--sshpubkey="' . $_ . '"' } @grep_out;
+my $new_keys_str = join(' ', @new_keys);
+
+my $ipa_cmd = "ipa user-mod $whoami $new_keys_str";
+system($ipa_cmd);
