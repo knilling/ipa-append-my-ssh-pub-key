@@ -29,6 +29,8 @@ Instead, what you really want to do is:
 1. log into the new machine.
 1. automatically generate new SSH keys, upon login.
 1. automatically publish your new public SSH key to the FreeIPA server.
+1. automatically remove any old SSH public keys form the FreeIPA
+   for this user+host, if they exist.
 
 That's where `ipa-append-my-ssh-pub-key` comes in.
 
@@ -37,3 +39,6 @@ This script
 1. checks to see if your current SSH public key is on the FreeIPA server.
 1. uploads and *appends* your current SSH public key to your list of public keys
    on the FreeIPA server, if it is not already on the FreeIPA server.
+1. uploads and *replaces* your current SSH public key to your list of public keys
+   on the FreeIPA server, if there is an old public SSH key on FreeIPA server
+   for this user+hostname combination.
