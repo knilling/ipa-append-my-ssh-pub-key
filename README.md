@@ -28,7 +28,7 @@ Instead, what you really want to do is:
 1. build a new machine as a FreeIPA client.
 1. log into the new machine.
 1. automatically generate new SSH keys, upon login.
-1. automatically to publish your new public SSH key to the FreeIPA server.
+1. automatically publish your new public SSH key to the FreeIPA server.
 
 That's where `ipa-append-my-ssh-pub-key` comes in.
 
