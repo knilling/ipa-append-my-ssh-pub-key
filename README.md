@@ -37,4 +37,5 @@ This script
 1. creates a new SSH keypair for you, if one doesn't exist.
 1. gets all of your public SSH keys from the FreeIPA server.
 1. checks to see if your current SSH public key is on the FreeIPA server.
-1. uploads your current SSH public key if it is not on the FreeIPA server.
+1. uploads and *appends* your new SSH public key to your list of public keys
+   on the FreeIPA server.
