@@ -39,6 +39,5 @@ This script
 1. checks to see if your current SSH public key is on the FreeIPA server.
 1. uploads and *appends* your current SSH public key to your list of public keys
    on the FreeIPA server, if it is not already on the FreeIPA server.
-1. uploads and *replaces* your current SSH public key to your list of public keys
-   on the FreeIPA server, if there is an old public SSH key on FreeIPA server
-   for this user+hostname combination.
+1. uploads and *replaces* any old SSH public keys for your user+hostname, on the FreeIPA server,
+   with your current SSH public key if such old public SSH keys exist.
