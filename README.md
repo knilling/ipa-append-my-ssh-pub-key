@@ -4,9 +4,8 @@
 ```
 chmod +x ipa-append-my-ssh-pub-key
 ./ipa-append-my-ssh-pub-key
+# add to `/etc/profile` or `~/.profile`, to run automatically on login
 ```
-
-Pro-tip: add this to `/etc/profile` or `~/.profile`
 
 ## The Problem
 Let's say that you...
